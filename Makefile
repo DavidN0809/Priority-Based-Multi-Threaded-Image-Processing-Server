@@ -16,7 +16,7 @@ CLIENT = client
 SERVER = server
 
 # Default target
-all: $(CLIENT) $(SERVER)
+all: clean $(CLIENT) $(SERVER)
 
 # Client and server programs
 $(CLIENT): $(CLIENT_OBJECTS)
