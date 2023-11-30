@@ -13,3 +13,7 @@ This project is currently under development and aims to create a high-performanc
 ## Progress
 
 This project is a work in progress, and updates will be provided as new milestones are achieved.
+
+### Compile Opencv Test
+gcc opencv_test_c.c -o opencv_test_c `pkg-config --cflags --libs opencv`
+
