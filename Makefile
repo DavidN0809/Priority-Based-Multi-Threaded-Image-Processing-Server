@@ -1,37 +1,19 @@
-# Compiler and flags
-CC = gcc
-CFLAGS = -Wall -O2
+CC=gcc
+CFLAGS=-Wall
 
-# Source files
-COMMON_SOURCES = csapp.c
-CLIENT_SOURCES = client.c $(COMMON_SOURCES)
-SERVER_SOURCES = server.c $(COMMON_SOURCES)
+all: send_an_image_server send_an_image_client
 
-# Object files
-CLIENT_OBJECTS = $(CLIENT_SOURCES:.c=.o)
-SERVER_OBJECTS = $(SERVER_SOURCES:.c=.o)
+send_an_image_server: send_an_image_server.o
+	$(CC) $(CFLAGS) -o send_an_image_server send_an_image_server.o
 
-# Executable names
-CLIENT = client
-SERVER = server
+send_an_image_client: send_an_image_client.o
+	$(CC) $(CFLAGS) -o send_an_image_client send_an_image_client.o
 
-# Default target
-all: clean $(CLIENT) $(SERVER)
+send_an_image_server.o: send_an_image_server.c
+	$(CC) $(CFLAGS) -c send_an_image_server.c
 
-# Client and server programs
-$(CLIENT): $(CLIENT_OBJECTS)
-	$(CC) $(CFLAGS) -o $@ $^
+send_an_image_client.o: send_an_image_client.c
+	$(CC) $(CFLAGS) -c send_an_image_client.c
 
-$(SERVER): $(SERVER_OBJECTS)
-	$(CC) $(CFLAGS) -o $@ $^
-
-# To obtain object files
-%.o: %.c
-	$(CC) $(CFLAGS) -c $<
-
-# Clean
 clean:
-	rm -f $(CLIENT) $(SERVER) *.o
-
-# Phony targets
-.PHONY: all clean
+	rm -f *.o send_an_image_server send_an_image_client

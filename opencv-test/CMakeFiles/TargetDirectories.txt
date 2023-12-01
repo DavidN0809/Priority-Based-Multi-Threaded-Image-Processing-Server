@@ -1,3 +1,0 @@
-/home/david/Documents/GitHub/Priority-Based-Pre-Threaded-Image-Processing-Server/test/CMakeFiles/DisplayImage.dir
-/home/david/Documents/GitHub/Priority-Based-Pre-Threaded-Image-Processing-Server/test/CMakeFiles/edit_cache.dir
-/home/david/Documents/GitHub/Priority-Based-Pre-Threaded-Image-Processing-Server/test/CMakeFiles/rebuild_cache.dir
