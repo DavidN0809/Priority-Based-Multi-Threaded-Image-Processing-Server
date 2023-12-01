@@ -69,29 +69,52 @@ void *handle_client(void *newsockfd_ptr) {
     fclose(fp);
     printf("Server: Received image from client %d. Saving to %s...\n", client_number, filename);
     // Comment out or remove the greyscaling part
-    
-    printf("Server: Sending image back to client %d... File Size is %d\n", client_number, file_size);
-    
-    // Send the actual size of the image back to the client
-    printf("Server: Sending actual image size %d bytes back to client %d\n", file_size, client_number);
-    n = write(newsockfd, &file_size, sizeof(file_size));
-    if (n < 0) error("ERROR writing file size to socket");
-    // Send the original image back to the client
+   // Convert the image and save the greyscale version
+    char inputPath[1024];
+    char outputPath[1024];
+    sprintf(inputPath, "./server/received_images/received_image_%d.jpg", client_number);
+    sprintf(outputPath, "./server/greyscale_images/greyscale_image_%d.jpg", client_number);
+    char cmd[2048];
+    sprintf(cmd, "./opencv/convert %s %s", inputPath, outputPath);
+    system(cmd);
+
+    // Open the greyscale image
+    fp = fopen(outputPath, "rb");
+    if (fp == NULL) error("ERROR opening greyscale file");
+
+    // Get the size of the greyscale image
+    fseek(fp, 0, SEEK_END);
+    int greyscale_file_size = ftell(fp);
+    rewind(fp);
+
+    // Allocate memory for the greyscale image data
+    char *greyscale_image_data = malloc(greyscale_file_size);
+    if (greyscale_image_data == NULL) error("ERROR allocating memory for greyscale image");
+
+    // Read the greyscale image into the buffer
+    fread(greyscale_image_data, greyscale_file_size, 1, fp);
+    fclose(fp);
+
+    // Send the size of the greyscale image back to the client
+    printf("Server: Sending greyscale image size %d bytes back to client %d\n", greyscale_file_size, client_number);
+    n = write(newsockfd, &greyscale_file_size, sizeof(greyscale_file_size));
+    if (n < 0) error("ERROR writing greyscale file size to socket");
+
+    // Send the greyscale image back to the client
     int total_bytes_sent = 0;
-    while (total_bytes_sent < file_size) {
-        n = write(newsockfd, image_data + total_bytes_sent, file_size - total_bytes_sent);
+    while (total_bytes_sent < greyscale_file_size) {
+        n = write(newsockfd, greyscale_image_data + total_bytes_sent, greyscale_file_size - total_bytes_sent);
         if (n < 0) error("ERROR writing to socket");
         total_bytes_sent += n;
     }
 
-    free(image_data);
+    free(greyscale_image_data);
     decrement_connection_count();
     close(newsockfd);
-        printf("Server: Image sent to client %d. Closing connection.\n", client_number);
+    printf("Server: Greyscale image sent to client %d. Closing connection.\n", client_number);
 
     return NULL;
 }
-
 int main(int argc, char *argv[]) {
 
 int sockfd, newsockfd, portno = DEFAULT_PORT;
