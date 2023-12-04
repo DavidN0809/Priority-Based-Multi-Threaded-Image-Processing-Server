@@ -36,6 +36,7 @@ void millisleep(int milliseconds);
 void displayQueue(queue *q);
 void error(const char *msg);
 int generate_client_number();
+int decrement_client_number();
 void *handle_client(void *vargp);
 void *consumer(void *q);
 queue *queueInit (void);
@@ -66,18 +67,25 @@ int generate_client_number() {
     return client_number;
 }
 
+int decrement_client_number() {
+    pthread_mutex_lock(&client_count_mutex);
+    int client_number = client_count--;
+    pthread_mutex_unlock(&client_count_mutex);
+    return client_number;
+}
+
 void *handle_client(void *vargp) {
     int connfd = *((int *)vargp);
     rio_t rio;
     Rio_readinitb(&rio, connfd);
-   int client_number = generate_client_number();
+    int client_number = generate_client_number();
     printf("Server: Processing client %d...\n", client_number);
 
     millisleep(30000);
     
     printf("Server: Client %d connected.\n", client_number);
 
-        int file_size;
+     int file_size;
     Rio_readn(connfd, &file_size, sizeof(file_size));
     if (file_size <= 0) {
         fprintf(stderr, "Server: Received empty image or file size error from client %d.\n", client_number);
@@ -92,8 +100,8 @@ void *handle_client(void *vargp) {
 
     Rio_readn(connfd, image_data, file_size);
 
-char operation[256];
-Rio_readlineb(&rio, operation, sizeof(operation));
+    char operation[256];
+    Rio_readlineb(&rio, operation, sizeof(operation));
     
     char inputPath[1024], outputPath[1024];
     sprintf(inputPath, "./server/received_images/received_image_%d.jpg", client_number);
@@ -105,8 +113,8 @@ Rio_readlineb(&rio, operation, sizeof(operation));
     Free(image_data);
 
     
-char cmd[4096]; // Increase the buffer size
-snprintf(cmd, sizeof(cmd), "./opencv/convert %s %s %s", inputPath, outputPath, operation);
+    char cmd[4096]; // Increase the buffer size
+    snprintf(cmd, sizeof(cmd), "./opencv/convert %s %s %s", inputPath, outputPath, operation);
 
     system(cmd);
 
@@ -125,7 +133,7 @@ snprintf(cmd, sizeof(cmd), "./opencv/convert %s %s %s", inputPath, outputPath, o
     Free(gray_image_data);
     Close(connfd);
     printf("Server: Client %d disconnected.\n", client_number);
-
+    client_number = decrement_client_number();
     return NULL;
 }
 
@@ -242,10 +250,28 @@ if (pthread_getschedparam(pthread_self(), &current_policy, &current_param) != 0)
     exit(1);
 }
 
-printf("Master thread's current policy: %d, priority: %d\n", current_policy, current_param.sched_priority);
+// Convert the scheduling policy to a string
+const char* policyStr;
+switch (current_policy) {
+    case SCHED_FIFO:
+        policyStr = "FIFO";
+        break;
+    case SCHED_RR:
+        policyStr = "RR";
+        break;
+    case SCHED_OTHER:
+        policyStr = "OTHER";
+        break;
+    default:
+        policyStr = "UNKNOWN";
+        break;
+}
+
+printf("Master thread's current policy: %s, priority: %d\n", policyStr, current_param.sched_priority);
+
     // Start the worker threads with a lower priority than the main thread
     printf("Starting %d worker threads.\n", NUM_WORKERS);
-	param.sched_priority = sched_get_priority_min(policy) + 1; // Or any value lower than master's priority
+	param.sched_priority = sched_get_priority_min(policy); //lowest possible value
 	pthread_attr_t attr;
 	pthread_attr_init(&attr);
 	pthread_attr_setschedpolicy(&attr, policy);
@@ -256,7 +282,10 @@ printf("Master thread's current policy: %d, priority: %d\n", current_policy, cur
 		perror("Failed to create worker thread");
 		exit(1);
 	    }
+	    	    printf("Worker thread %d started with priority %d\n", i, param.sched_priority);
 	}
+
+
 
 pthread_attr_destroy(&attr);
 
@@ -280,7 +309,7 @@ pthread_attr_destroy(&attr);
         task new_task;
         new_task.connfd = *connfdp; // Assign the connection file descriptor to the task
         queueAdd(fifo, new_task); // Add the task to the queue
-        displayQueue(fifo); // Display the queue status
+       // displayQueue(fifo); // Display the queue status
 
         pthread_mutex_unlock(fifo->mut);
         pthread_cond_signal(fifo->notEmpty);
