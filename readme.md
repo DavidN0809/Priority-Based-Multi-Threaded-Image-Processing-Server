@@ -10,6 +10,11 @@ server requires, chmod +x ./server, and running as sudo, so $sudo ./server 2100
 
 Each client sends the server the `images.png`, the server saves these inside the server folder, will convert to greyscale, and send it back, where the client then saves it to the output directory. Each image has the client's number appended to it. For example, `received_image-1.jpg` is client 1's image.
 
+### Pop OS
+Due to my linux-gnu being installed under lib instead of /usr/ I had to pass this path, remove the -L"path" to use defaults
+LIB = -lpthread -L/lib/x86_64-linux-gnu/ -lcurl -lgdal
+
+
 ## Demo
 - Set the number of worker threads to one less than the number of cores on your system.
 - Set the buffer size to twice the number of threads.
