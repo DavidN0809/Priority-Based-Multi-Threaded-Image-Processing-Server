@@ -36,7 +36,17 @@ void send_image(int sockfd, const char *filename) {
     Free(buffer);
 }
 
-void receive_and_display_image(int sockfd, const char* outputImagePath) {
+void display_image(const char* imagePath, const char* title) {
+    char cmd[1024];
+    sprintf(cmd, "display %s %s", imagePath, title);
+    int ret = system(cmd);
+    if (ret != 0) {
+        fprintf(stderr, "Error executing command: %s\n", cmd);
+    }
+}
+
+
+void receive_image(int sockfd, const char* outputImagePath) {
     // Receive the image size back from the server
     int file_size;
     Rio_readn(sockfd, &file_size, sizeof(file_size));
@@ -57,11 +67,6 @@ void receive_and_display_image(int sockfd, const char* outputImagePath) {
     fwrite(image_data, 1, file_size, fp);
     fclose(fp);
     Free(image_data);
-
-    // Call the external display program
-    char cmd[1024];
-    sprintf(cmd, "./display %s", outputImagePath);
-    system(cmd);
 }
 
 int main(int argc, char **argv) {
@@ -102,7 +107,11 @@ int main(int argc, char **argv) {
     Rio_writen(sockfd, "\n", 1); // Send newline character to signify end of operation
 
     printf("Client: Receiving processed image from server...\n");
-    receive_and_display_image(sockfd, outputImagePath);
+    receive_image(sockfd, outputImagePath);
+
+ // Display both images
+    display_image(image_file, "Sent Image");
+    display_image(outputImagePath, "Received Image");
 
     Close(sockfd);
     return 0;

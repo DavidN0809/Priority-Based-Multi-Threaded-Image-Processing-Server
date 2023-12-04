@@ -3,8 +3,8 @@
 #include <iostream>
 
 int main(int argc, char **argv) {
-    if (argc != 2) {
-        std::cerr << "Usage: display <Image_Path>" << std::endl;
+    if (argc != 3) {
+        std::cerr << "Usage: display <Image_Path> <Title>" << std::endl;
         return 1;
     }
 
@@ -14,8 +14,8 @@ int main(int argc, char **argv) {
         return 1;
     }
 
-    cv::namedWindow("Display Image", cv::WINDOW_AUTOSIZE);
-    cv::imshow("Display Image", image);
+    cv::namedWindow(argv[2], cv::WINDOW_AUTOSIZE);
+    cv::imshow(argv[2], image);
 
     cv::waitKey(0);
     return 0;

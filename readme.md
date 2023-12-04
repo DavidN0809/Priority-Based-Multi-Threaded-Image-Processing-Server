@@ -47,3 +47,26 @@ This document provides instructions for setting up and using a pre-threaded imag
    - This results in the master finding the connection descriptor buffer full.
 6. **Logging**: Ensure that messages from both master and worker threads are printed to demonstrate the master thread's higher priority.
 
+## How it works
+This system implements a server-client model with image processing capabilities. The server (`server.c`) follows a producer-consumer design and interacts with clients that send images for processing. The server uses OpenCV for image manipulation, handling operations like greyscale conversion, blurring, and flipping images.
+
+### Server (`server.c`)
+- **Functionality:** Manages client connections, receives images, processes them using OpenCV functions, and sends back the processed images.
+- **Key Components:**
+  - **Task Queue:** Utilizes a producer-consumer queue for managing tasks.
+  - **Thread Management:** Employs multiple worker threads for concurrent processing.
+  - **Image Processing:** Interfaces with OpenCV via `convert`, which performs specified image processing operations.
+
+### Image Processing (`convert`)
+- **Functionality:** Applies various image processing operations like greyscale, blur, and flips (vertical and horizontal).
+- **Implementation:** Uses OpenCV functions for image manipulation.
+
+### Client (`client.c` and `client-many.c`)
+- **Functionality:** 
+  - `client.c`: Handles a single client sending an image to the server for processing.
+  - `client-many.c`: Manages multiple clients sending images concurrently.
+- **Process:** Clients send an image and a desired operation to the server, receive the processed image, and display it using the `display` utility.
+
+### Display Utility (`display.cpp`)
+- **Purpose:** Displays images using OpenCV's highgui module.
+- **Function:** Takes an image path and a window title as arguments, displaying the image in a window.
