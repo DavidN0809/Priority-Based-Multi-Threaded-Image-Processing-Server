@@ -13,7 +13,7 @@ void send_image(int sockfd, const char *filename) {
     FILE *fp = fopen(filename, "rb");
     if (fp == NULL) {
         fprintf(stderr, "Error: File '%s' does not exist.\n", filename);
-        exit(1);
+        return;
     }
 
     fseek(fp, 0, SEEK_END);
@@ -21,7 +21,7 @@ void send_image(int sockfd, const char *filename) {
     if (file_size == 0) {
         fprintf(stderr, "Error: File '%s' is empty.\n", filename);
         fclose(fp);
-        exit(1);
+        return;
     }
     rewind(fp);
     // Send image size to the server
@@ -86,20 +86,21 @@ void client_process(int client_num, const char *server_ip, const char *image_fil
 }
 
 int main(int argc, char **argv) {
-    if (argc < 3) {
-        fprintf(stderr, "Usage: %s <number of clients> <image file>\n", argv[0]);
+    if (argc < 4) {
+        fprintf(stderr, "Usage: %s <number of clients> <image file> <server IP>\n", argv[0]);
         exit(1);
     }
 
     int num_clients = atoi(argv[1]);
     char *image_file = argv[2];
+    char *server_ip = (argc > 3) ? argv[3] : DEFAULT_SERVER_IP; // Use provided IP or default
 
     pid_t pids[num_clients];
 
     for (int i = 0; i < num_clients; ++i) {
         pids[i] = fork();
         if (pids[i] == 0) { // Child process
-            client_process(i, DEFAULT_SERVER_IP, image_file);
+            client_process(i, server_ip, image_file);
             exit(0);
         }
     }
