@@ -38,6 +38,22 @@ void *handle_client(void *vargp);
 void *consumer(void *q);
 queue *queueInit (void);
 void queueDelete(queue *q);
+void displayQueue(queue *q);
+
+void displayQueue(queue *q) {
+    int i;
+    printf("Queue status: ");
+    for (i = 0; i < QUEUESIZE; i++) {
+        if (i >= q->head && i < q->tail) {
+            printf("F "); // Filled
+        } else {
+            printf("E "); // Empty
+        }
+    }
+    printf("\n");
+}
+
+
 
 void error(const char *msg) {
     perror(msg);
@@ -64,8 +80,6 @@ void *handle_client(void *vargp) {
     Rio_readinitb(&rio, connfd);
     int client_number = generate_client_number();
     printf("Server: Processing client %d...\n", client_number);
-
-    millisleep(30000);
     
     printf("Server: Client %d connected.\n", client_number);
 
@@ -126,14 +140,13 @@ void *consumer(void *q) {
     task t;
 
     while (1) {
+        millisleep(30000);
         printf("Worker thread: Received task, beginning processing.\n");
-      //  displayQueue(fifo); // Display queue after receiving a task
         pthread_mutex_lock(fifo->mut);
         while (fifo->empty) {
             pthread_cond_wait(fifo->notEmpty, fifo->mut);
         }
         queueDel(fifo, &t);
-      //  displayQueue(fifo); // Display the queue status
         pthread_mutex_unlock(fifo->mut);
         pthread_cond_signal(fifo->notFull);
         printf("consumer: received task.\n");
@@ -269,8 +282,6 @@ printf("Master thread's current policy: %s, priority: %d\n", policyStr, current_
 	    	    printf("Worker thread %d started with priority %d\n", i, param.sched_priority);
 	}
 
-
-
     pthread_attr_destroy(&attr);
 
     // Set up the server to listen for incoming client connections
@@ -287,13 +298,15 @@ printf("Master thread's current policy: %s, priority: %d\n", policyStr, current_
         // Lock the queue, wait if it is full, then add the new task
         pthread_mutex_lock(fifo->mut);
         while (fifo->full) {
+                printf("Master thread: Queue Full...\n");
             pthread_cond_wait(fifo->notFull, fifo->mut);
+           //   displayQueue(fifo); // Display the queue status
         }
 
         task new_task;
         new_task.connfd = *connfdp; // Assign the connection file descriptor to the task
         queueAdd(fifo, new_task); // Add the task to the queue
-       // displayQueue(fifo); // Display the queue status
+//       displayQueue(fifo); // Display the queue status
 
         pthread_mutex_unlock(fifo->mut);
         pthread_cond_signal(fifo->notEmpty);
