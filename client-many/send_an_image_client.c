@@ -1,7 +1,7 @@
 #include "csapp.h"
 #define MAX_BUFFER_SIZE 4096
 #define DEFAULT_PORT 2100
-#define DEFAULT_SERVER_IP "localhost"
+#define DEFAULT_SERVER_IP "10.131.139.240"
 #define DEFAULT_OPERATION "greyscale"
 #define NUM_OPERATIONS 4
 void error(const char *msg) {
