@@ -5,8 +5,6 @@
 #include <stdlib.h>
 #include <pthread.h>
 
-#define LOOP 5
-
 #define MAX_BUFFER_SIZE 4096
 #define DEFAULT_PORT 2100
 #define NUM_WORKERS 13
@@ -33,7 +31,6 @@ typedef struct {
 void queueAdd(queue *q, task in);
 void queueDel(queue *q, task *out);
 void millisleep(int milliseconds);
-void displayQueue(queue *q);
 void error(const char *msg);
 int generate_client_number();
 int decrement_client_number();
@@ -41,19 +38,6 @@ void *handle_client(void *vargp);
 void *consumer(void *q);
 queue *queueInit (void);
 void queueDelete(queue *q);
-
-void displayQueue(queue *q) {
-    int i;
-    printf("Queue status: ");
-    for (i = 0; i < QUEUESIZE; i++) {
-        if (i >= q->head && i < q->tail) {
-            printf("F "); // Filled
-        } else {
-            printf("E "); // Empty
-        }
-    }
-    printf("\n");
-}
 
 void error(const char *msg) {
     perror(msg);
@@ -85,7 +69,7 @@ void *handle_client(void *vargp) {
     
     printf("Server: Client %d connected.\n", client_number);
 
-     int file_size;
+    int file_size;
     Rio_readn(connfd, &file_size, sizeof(file_size));
     if (file_size <= 0) {
         fprintf(stderr, "Server: Received empty image or file size error from client %d.\n", client_number);
@@ -287,7 +271,7 @@ printf("Master thread's current policy: %s, priority: %d\n", policyStr, current_
 
 
 
-pthread_attr_destroy(&attr);
+    pthread_attr_destroy(&attr);
 
     // Set up the server to listen for incoming client connections
     int listenfd = Open_listenfd(DEFAULT_PORT);
