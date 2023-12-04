@@ -3,7 +3,7 @@
 #define DEFAULT_PORT 2100
 #define DEFAULT_SERVER_IP "localhost"
 #define DEFAULT_OPERATION "greyscale"
-
+#define NUM_OPERATIONS 4
 void error(const char *msg) {
     perror(msg);
     exit(1);
@@ -64,47 +64,50 @@ void receive_and_display_image(int sockfd, const char* outputImagePath) {
     system(cmd);
 }
 
-int main(int argc, char **argv) {
-    char *server_ip = DEFAULT_SERVER_IP; // Default server IP
-    char *operation = DEFAULT_OPERATION; // Default operation
-    char *image_file;
-    char *outputImagePath = "output_image.jpg";
+void client_process(int client_num, const char *server_ip, const char *image_file) {
+    char *operations[NUM_OPERATIONS] = {"greyscale", "blur", "vflip", "hflip"};
+    srand(time(NULL) + client_num); // Seed random number generator
+    char *operation = operations[rand() % NUM_OPERATIONS]; // Randomly select an operation
 
-    // Argument parsing
-    switch (argc) {
-        case 2:
-            image_file = argv[1];
-            break;
-        case 3:
-            image_file = argv[1];
-            operation = argv[2];
-            break;
-        case 4:
-            image_file = argv[1];
-            operation = argv[2];
-            server_ip = argv[3]; // User-specified server IP
-            break;
-        default:
-            // Display usage instructions if incorrect usage
-            fprintf(stderr, "Usage: %s <image file> [operation] [server IP]\n", argv[0]);
-            printf("Available operations: greyscale, blur, vflip, hflip\n");
-            printf("Default server IP: %s\n", DEFAULT_SERVER_IP);
-            exit(1);
-    }
+    printf("Client %d: Selected operation: %s\n", client_num, operation);
 
     int sockfd = Open_clientfd(server_ip, DEFAULT_PORT);
-
-    printf("Client: Sending image '%s' to server %s...\n", image_file, server_ip);
     send_image(sockfd, image_file);
 
     // Send the operation type to the server
     Rio_writen(sockfd, operation, strlen(operation));
     Rio_writen(sockfd, "\n", 1); // Send newline character to signify end of operation
 
-    printf("Client: Receiving processed image from server...\n");
-    receive_and_display_image(sockfd, outputImagePath);
+    char outputImagePath[1024];
+    sprintf(outputImagePath, "./output/output_image_client%d.jpg", client_num); // Append client number to file name
 
+    receive_and_display_image(sockfd, outputImagePath);
     Close(sockfd);
-    return 0;
 }
 
+int main(int argc, char **argv) {
+    if (argc < 3) {
+        fprintf(stderr, "Usage: %s <number of clients> <image file>\n", argv[0]);
+        exit(1);
+    }
+
+    int num_clients = atoi(argv[1]);
+    char *image_file = argv[2];
+
+    pid_t pids[num_clients];
+
+    for (int i = 0; i < num_clients; ++i) {
+        pids[i] = fork();
+        if (pids[i] == 0) { // Child process
+            client_process(i, DEFAULT_SERVER_IP, image_file);
+            exit(0);
+        }
+    }
+
+    // Parent process waits for all child processes to finish
+    for (int i = 0; i < num_clients; ++i) {
+        waitpid(pids[i], NULL, 0);
+    }
+
+    return 0;
+}

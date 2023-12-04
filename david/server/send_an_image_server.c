@@ -52,7 +52,7 @@ void *handle_client(void *vargp) {
    int client_number = generate_client_number();
     printf("Server: Processing client %d...\n", client_number);
 
-    //millisleep(30000);
+    millisleep(30000);
     
     printf("Server: Client %d connected.\n", client_number);
 
@@ -76,7 +76,7 @@ Rio_readlineb(&rio, operation, sizeof(operation));
     
     char inputPath[1024], outputPath[1024];
     sprintf(inputPath, "./server/received_images/received_image_%d.jpg", client_number);
-    sprintf(outputPath, "./server/greyscale_images/greyscale_image_%d.jpg", client_number);
+    sprintf(outputPath, "./server/processed_image/processed_image_%d.jpg", client_number);
 
     FILE *fp = fopen(inputPath, "wb");
     fwrite(image_data, 1, file_size, fp);
