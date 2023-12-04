@@ -38,13 +38,13 @@ void send_image(int sockfd, const char *filename) {
 
 void display_image(const char* imagePath1, const char* title1, const char* imagePath2, const char* title2) {
     char cmd[2048];
-    sprintf(cmd, "display %s %s %s %s", imagePath1, title1, imagePath2, title2);
+    // Ensure the command is formatted correctly
+    sprintf(cmd, "./display \"%s\" \"%s\" \"%s\" \"%s\"", imagePath1, title1, imagePath2, title2);
     int ret = system(cmd);
     if (ret != 0) {
         fprintf(stderr, "Error executing command: %s\n", cmd);
     }
 }
-
 
 void receive_image(int sockfd, const char* outputImagePath) {
     // Receive the image size back from the server
