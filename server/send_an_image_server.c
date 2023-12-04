@@ -141,7 +141,7 @@ void *consumer(void *q) {
             pthread_cond_wait(fifo->notEmpty, fifo->mut);
         }
         queueDel(fifo, &t);
-        displayQueue(fifo); // Display the queue status
+      //  displayQueue(fifo); // Display the queue status
         pthread_mutex_unlock(fifo->mut);
         pthread_cond_signal(fifo->notFull);
         printf("consumer: received task.\n");
