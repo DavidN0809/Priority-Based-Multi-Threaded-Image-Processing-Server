@@ -36,9 +36,9 @@ void send_image(int sockfd, const char *filename) {
     Free(buffer);
 }
 
-void display_image(const char* imagePath, const char* title) {
-    char cmd[1024];
-    sprintf(cmd, "display %s %s", imagePath, title);
+void display_image(const char* imagePath1, const char* title1, const char* imagePath2, const char* title2) {
+    char cmd[2048];
+    sprintf(cmd, "display %s %s %s %s", imagePath1, title1, imagePath2, title2);
     int ret = system(cmd);
     if (ret != 0) {
         fprintf(stderr, "Error executing command: %s\n", cmd);
@@ -110,8 +110,7 @@ int main(int argc, char **argv) {
     receive_image(sockfd, outputImagePath);
 
  // Display both images
-    display_image(image_file, "Sent Image");
-    display_image(outputImagePath, "Received Image");
+    display_image(image_file, "Sent Image",outputImagePath,"Received Image");
 
     Close(sockfd);
     return 0;
