@@ -1,25 +1,49 @@
 # Priority-Based Pre-Threaded Image Processing Server (Work in Progress)
 
-## Compile OpenCV Test
-- Run `make`.
-- Then run the compiled program.
-- All inputs are optional.
-- Client command: `./send_an_image_client "ip addr" "port"`
-- Server command: `./send_an_image_server "port"`
-server requires, chmod +x ./server, and running as sudo, so $sudo ./server 2100
+This document provides instructions for setting up and using a pre-threaded image processing server. The server supports various image processing operations and can handle multiple client requests concurrently.
 
-Each client sends the server the `images.png`, the server saves these inside the server folder, will convert to greyscale, and send it back, where the client then saves it to the output directory. Each image has the client's number appended to it. For example, `received_image-1.jpg` is client 1's image.
+## Overview
 
-### Pop OS
-Due to my linux-gnu being installed under lib instead of /usr/ I had to pass this path, remove the -L"path" to use defaults
-LIB = -lpthread -L/lib/x86_64-linux-gnu/ -lcurl -lgdal
+- **Client**: Send images to the server for processing.
+- **Client-Many**: Allows sending multiple images simultaneously from different clients.
+- **Server**: Handles image processing requests.
+- **Configuration Notes**: Specific settings for Pop!_OS users.
 
+## Client Usage
 
-## Demo
-- Set the number of worker threads to one less than the number of cores on your system.
-- Set the buffer size to twice the number of threads.
-- Insert a delay of 30 seconds for the worker threads.
-- Now send a series of different client requests using multiple clients.
-- Since the master is running at a higher priority and the worker threads are slow to process the requests (due to the delay), the master will preempt the workers whenever there is a request from the client, resulting in the master finding the connection descriptor buffer full.
-- Print appropriate messages from the master and worker threads to demonstrate that the master thread is indeed running at a higher priority.
+- **Single Image Processing**:
+  - Command: `./send_an_image_client input.jpg blur localhost`
+  - `input.jpg`: The input image file.
+  - `blur`, `vflip`, `hflip`, `greyscale`: Processing options (default is `greyscale` if none specified).
+  - `localhost`: IP address of the server.
+
+## Client-Many Usage
+
+- **Multiple Image Processing**:
+  - Command: `./send_an_image_client 12 images.png`
+  - `images.png`: The input image file.
+  - `12`: Number of clients to simulate.
+  - Processing is picked randomly for each client.
+
+## Server Setup
+
+- Command: `sudo ./send_an_image_server`
+- **Note**: Requires `sudo` due to thread creation permissions.
+
+## Configuration Notes for Pop!_OS
+
+- **Library Paths**:
+  - Default LIB: `-lpthread -L/lib/x86_64-linux-gnu/ -lcurl -lgdal`
+  - For Pop!_OS, OpenGL is installed at `-I/usr/local/include/opencv4`. Adjust according to your Linux distribution.
+
+## Demo Setup
+
+1. **Set Worker Threads**: Use one less than the number of cores on your system.
+2. **Buffer Size**: Set this to twice the number of threads.
+3. **Insert Delay**: Add a 30-second delay for worker threads.
+4. **Client Requests**: Send different client requests using multiple clients.
+5. **Observe Behavior**:
+   - Due to the master thread running at a higher priority, and worker threads being slower (because of the delay), the master will preempt workers when new client requests arrive.
+   - This results in the master finding the connection descriptor buffer full.
+6. **Logging**: Ensure that messages from both master and worker threads are printed to demonstrate the master thread's higher priority.
 
