@@ -135,6 +135,24 @@ void *handle_client(void *vargp) {
     return NULL;
 }
 
+void delay(int milliseconds)
+{
+    struct timespec req, rem;
+
+    if (milliseconds > 999)
+    { 
+        req.tv_sec = (int)(milliseconds / 1000); /* Must be Non-Negative */
+        req.tv_nsec = (milliseconds - ((long)req.tv_sec * 1000)) * 1000000; /* Must be in range of 0 to 999999999 */
+    } 
+    else 
+    {
+        req.tv_sec = 0; /* Must be Non-Negative */
+        req.tv_nsec = milliseconds * 1000000; /* Must be in range of 0 to 999999999 */
+    }
+
+    nanosleep(&req, &rem);
+}
+
 void *consumer(void *q) {
     queue *fifo = (queue *)q;
     task t;
@@ -160,23 +178,6 @@ void *consumer(void *q) {
 }
 
 
-void delay(int milliseconds)
-{
-    struct timespec req, rem;
-
-    if (milliseconds > 999)
-    { 
-        req.tv_sec = (int)(milliseconds / 1000); /* Must be Non-Negative */
-        req.tv_nsec = (milliseconds - ((long)req.tv_sec * 1000)) * 1000000; /* Must be in range of 0 to 999999999 */
-    } 
-    else 
-    {
-        req.tv_sec = 0; /* Must be Non-Negative */
-        req.tv_nsec = milliseconds * 1000000; /* Must be in range of 0 to 999999999 */
-    }
-
-    nanosleep(&req, &rem);
-}
 
 queue *queueInit (void)
 {
