@@ -1,4 +1,4 @@
-# Priority-Based Pre-Threaded Image Processing Server
+# Priority-Based Multi-Threaded Image Processing Server
 
 This document provides instructions for setting up and using a pre-threaded image processing server. The server supports various image processing operations and can handle multiple client requests concurrently.
 
